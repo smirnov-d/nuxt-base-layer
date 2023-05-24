@@ -24,7 +24,7 @@
   width: 50px;
   height: 50px;
   border: 5px solid #ccc;
-  border-top-color: red;
+  border-top-color: orange;
   border-radius: 50%;
   animation: spin 1s ease infinite;
 }
