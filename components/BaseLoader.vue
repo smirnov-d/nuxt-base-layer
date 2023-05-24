@@ -39,7 +39,7 @@
   width: 20px;
   height: 20px;
   border: 2px solid #ccc;
-  border-top-color: red;
+  border-top-color: orange;
   border-radius: 50%;
   animation: spin 1s ease infinite;
 }
@@ -48,7 +48,7 @@
   width: 100px;
   height: 100px;
   border: 10px solid #ccc;
-  border-top-color: red;
+  border-top-color: orange;
   border-radius: 50%;
   animation: spin 1s ease infinite;
 }
