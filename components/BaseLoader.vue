@@ -1,10 +1,14 @@
 <template>
   <teleport to="body">
     <div class="loader">
-      <div class="loader__spinner"></div>
+      <div class="loader__spinner" />
     </div>
   </teleport>
 </template>
+
+
+<script setup lang="ts">
+</script>
 
 <style>
 .loader {
@@ -85,5 +89,3 @@
   border-top-color: #212121;
 }
 </style>
-<script setup lang="ts">
-</script>

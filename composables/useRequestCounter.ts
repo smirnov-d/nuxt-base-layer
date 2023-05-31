@@ -1,5 +1,5 @@
 const counter = ref(0);
-export const useCounter = () => {
+export const useRequestCounter = () => {
   const increment = () => {
     counter.value++;
   };
