@@ -20,11 +20,6 @@
     >
       Login
     </button>
-    <button @click="privateFn">
-      get private info
-    </button>
-
-    {{ currentUser }}
   </div>
 </template>
 
@@ -32,12 +27,11 @@
 definePageMeta({
   layout: 'empty'
 })
-import { useCustomFetch } from '../composables/useCustomFetch';
 
 const username = ref('')
 const password = ref('')
 
-const { login, currentUser } = useAuth();
+const { login } = useAuth();
 
 const loading = ref(false);
 async function onLoginHandler() {
@@ -47,11 +41,6 @@ async function onLoginHandler() {
   } finally {
     loading.value = false;
   }
-}
-
-async function privateFn() {
-  const res = await useCustomFetch('/api/private');
-  console.log(res);
 }
 </script>
 
