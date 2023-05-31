@@ -16,7 +16,14 @@ export default defineNuxtConfig({
       //   ? process.env.API_BASE_URL
       //   : '/api',
       auth: {
+        // specify api.me if enable prefetching
         prefetchUser: true,
+        api: {
+          login: '/login',
+          logout: '/logout',
+          refresh: '/refresh-access',
+          me: '/me',
+        },
       },
     },
   },
