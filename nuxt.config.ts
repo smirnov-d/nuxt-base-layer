@@ -11,10 +11,27 @@ export default defineNuxtConfig({
   },
   runtimeConfig: {
     public: {
-      apiBaseURL: process.env.API_BASE_URL
+      apiBaseURL: process.env.API_BASE_URL,
       // process.env.NODE_ENV === 'production'
       //   ? process.env.API_BASE_URL
       //   : '/api',
+      auth: {
+        prefetchUser: true,
+      },
+    },
+  },
+  vite: {
+    server: {
+      cors: true,
+      proxy: {
+        '/api': {
+          target: process.env.API_BASE_URL,
+          changeOrigin: true,
+        },
+      },
+    },
+    define: {
+      'process.env.DEBUG': false,
     },
   },
 })

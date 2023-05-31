@@ -1,6 +1,5 @@
 import { apiService } from '~/api/api.service';
 
-
 const currentUser = ref<IUser | null>(null);
 
 const token = ref<string | null>(null);
