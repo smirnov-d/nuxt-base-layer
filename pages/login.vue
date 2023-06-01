@@ -1,5 +1,5 @@
 <template>
-  <div class="card card-glass card-md">
+  <div class="card card-glass card-md ma-auto">
     <div class="title">
       Login
     </div>
