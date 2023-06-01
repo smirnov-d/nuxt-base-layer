@@ -1,5 +1,3 @@
-import { useCustomFetch } from '../composables/useCustomFetch';
-
 export class BaseAuth<T> {
   constructor(protected readonly path = '', protected readonly http = useCustomFetch) {}
 

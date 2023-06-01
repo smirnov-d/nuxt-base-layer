@@ -1,5 +1,3 @@
-import { useAuth } from '../composables/useAuth';
-
 export default defineNuxtRouteMiddleware(async () => {
   const config = useRuntimeConfig()
   if (config.public.auth?.prefetchUser) {

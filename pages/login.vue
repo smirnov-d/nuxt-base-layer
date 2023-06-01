@@ -45,6 +45,9 @@ async function onLoginHandler() {
 </script>
 
 <style scoped>
+.ma-auto {
+  margin: auto;
+}
 
 .card {
   display: flex;

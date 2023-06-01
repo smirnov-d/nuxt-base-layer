@@ -8,8 +8,6 @@
 </template>
 
 <script setup lang="ts">
-import { useRequestCounter } from '../composables/useRequestCounter.js';
-
 const { counter } = useRequestCounter();
 </script>
 
@@ -30,8 +28,6 @@ const { counter } = useRequestCounter();
 .wrap {
   display: flex;
   flex-direction: column;
-  align-items: center;
-  justify-content: center;
   min-height: 100dvh;
   background-image: linear-gradient(to right, #8360c3, #2ebf91)!important;
 }

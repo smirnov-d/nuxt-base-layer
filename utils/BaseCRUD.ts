@@ -1,4 +1,3 @@
-import { useCustomFetch } from '../composables/useCustomFetch';
 import { UseFetchOptions } from '#app';
 export interface IFilter {
   [key: string]: string | number | boolean;

@@ -1,51 +1,86 @@
 <template>
-  <div>
-    <Suspense>
-      <slot />
-      <!--<template #fallback>
-        <BaseLoader />
-      </template>-->
-    </Suspense>
-    <BaseLoader v-if="counter"/>
-    <template v-if="error">
-      <p>Oops, it looks like the video player broke :/</p>
-      <!--<p>{{ error.message }}</p>
-      <p><button @click="recoverFromError(error)">Try again</button></p>-->
-    </template>
-    <!-- https://nuxt.com/docs/api/utils/show-error -->
-    <!--<NuxtErrorBoundary>
+  <div class="main">
+    <NuxtErrorBoundary>
       <Suspense>
-        <template v-if="true">
-          {{ counter }}
-          <NuxtPage />
-          <h1>this is an Index page</h1>
-          <hello-world/>
-          <my-demo/>
-        </template>
-        &lt;!&ndash;<template #fallback>
-          <BaseLoader />
-        </template>&ndash;&gt;
+        <slot />
       </Suspense>
+      <BaseLoader v-if="counter" />
       <template #error="{ error }">
-        &lt;!&ndash;<p>An error occurred: {{ error }}</p>&ndash;&gt;
-        <div>
-          <p>Oops, it looks like the video player broke :/</p>
-          <p>{{ error.message }}</p>
-          <p><button @click="recoverFromError(error)">Try again</button></p>
+        <div class="error-wrap">
+          <p>
+            An error occurred: <strong>{{ error }}</strong>
+          </p>
+          <button class="btn" @click="error.value = null">
+            Try again
+          </button>
         </div>
       </template>
-    </NuxtErrorBoundary>-->
+    </NuxtErrorBoundary>
   </div>
 </template>
 
 <script setup lang="ts">
-import { useCounter } from '#imports';
-
-const error = ref(null)
-onErrorCaptured(e => {
-  error.value = e
-  return false
-})
-
-const { counter } = useCounter();
+const { counter } = useRequestCounter();
 </script>
+
+<style scoped>
+
+:global(*) {
+  box-sizing: border-box;
+  padding: 0;
+  margin: 0;
+}
+
+:global(html, body) {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  font-size: 16px;
+  color: #333;
+}
+
+.error-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100dvh;
+  gap: 1rem;
+}
+
+.btn {
+  font-size: 1rem;
+  padding: 10px 15px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  background-color: #fff;
+  cursor: pointer;
+
+  &:hover {
+    background-color: #eee;
+  }
+
+  &:active {
+    background-color: #ddd;
+  }
+
+  &.btn-success {
+    background-color: #2a8d40;
+    color: #fff;
+    border-color: #2a8d40;
+
+    &:hover {
+      background-color: #218838;
+      border-color: #1e7e34;
+    }
+
+    &:active {
+      background-color: #1d7d33;
+      border-color: #1c7430;
+    }
+  }
+
+  &.btn-block {
+    width: 100%;
+  }
+}
+
+</style>
