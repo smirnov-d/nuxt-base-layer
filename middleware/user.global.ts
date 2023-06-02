@@ -6,7 +6,7 @@ export default defineNuxtRouteMiddleware(async () => {
     if (getToken() && !currentUser.value) {
       // await fetchCurrentUser();
       // await useCustomFetch('/auth/me');
-      await useFetch('http://localhost:3005/api/auth/me');
+      useFetch('http://localhost:3005/api/auth/me');
     }
   }
 })
