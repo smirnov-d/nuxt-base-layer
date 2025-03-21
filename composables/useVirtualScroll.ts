@@ -55,12 +55,12 @@ export function useVirtualScroll(
       if (
         sum > Math.max(0, listRef.value?.getBoundingClientRect?.()?.top * -1)
       ) {
-        start = Math.max(0, i - bufferSize) // Отматываем назад буфер
+        start = Math.max(0, i - bufferSize)
         break
       }
     }
 
-    let end = start + bufferSize // не накапливаем повторно высоты строк, попавших в буфер
+    let end = start + bufferSize // do not accumulate heights of rows that fall into the buffer
     while (
       sum <
       scrollTop.value +
@@ -81,17 +81,13 @@ export function useVirtualScroll(
     () => props.items,
     async () => {
       rowHeights.value.clear()
-      await nextTick()
-      updateRowHeights()
       await getVisibleRange()
-    },
-    { deep: true }
+    }
   )
 
   watch(
     scrollTop,
     async () => {
-      updateRowHeights()
       await getVisibleRange()
     },
     { immediate: true }
@@ -135,7 +131,7 @@ export function useVirtualScroll(
 
   const scrollParent = ref<HTMLElement>()
 
-  function getScrollParent(node) {
+  function getScrollParent(node: HTMLElement): HTMLElement | Window {
     if ([undefined, null, document.documentElement].includes(node)) {
       return window
     }
@@ -146,18 +142,21 @@ export function useVirtualScroll(
     ) {
       return node
     } else {
-      return getScrollParent(node?.parentNode)
+      return getScrollParent(node?.parentNode as HTMLElement)
     }
   }
 
-  onMounted(() => {
+  const controller = new AbortController()
+  const { signal } = controller
+
+  onMounted(async () => {
     scrollParent.value = getScrollParent(containerRef.value?.parentNode)
-    scrollParent.value.addEventListener('scroll', onScroll)
-    updateRowHeights()
+    scrollParent.value.addEventListener('scroll', onScroll, { signal })
+    await getVisibleRange()
   })
 
   onUnmounted(() => {
-    scrollParent.value.removeEventListener('scroll', onScroll)
+    controller.abort()
   })
 
   const observeRowChanges = () => {
@@ -186,8 +185,7 @@ export function useVirtualScroll(
     })
   }
 
-  onMounted(async () => {
-    await nextTick()
+  onMounted(() => {
     observeRowChanges()
     observeResizeChanges()
   })
