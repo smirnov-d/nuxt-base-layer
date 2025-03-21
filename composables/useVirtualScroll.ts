@@ -1,97 +1,98 @@
-import { computed, ref, watch, nextTick, onMounted, onUnmounted } from 'vue'
+export interface VirtualScrollProps {
+  items: Ref<unknown[]>
+  itemHeight?: number
+  bufferSize?: number
+}
 
-export function useVirtualScroll(props, listRef, rowRefs, containerRef) {
+export function useVirtualScroll(
+  props: VirtualScrollProps,
+  listRef: Ref<HTMLElement | null>,
+  rowRefs: Ref<(HTMLElement | null)[]>,
+  containerRef: Ref<HTMLElement | null>
+) {
+  const { bufferSize = 5, itemHeight = 40 } = props
+
   const scrollTop = ref(0)
   const topPadding = ref(0)
   const bottomPadding = ref(0)
 
   const rowHeights = ref(new Map())
-  const totalHeight = ref(0)
   const startIndex = ref(0)
   const endIndex = ref(0)
 
-  const bufferSize = 5 // buffer rows
-
-  // const rowAvgHeight.value = 40 // Default row height
   const rowAvgHeight = computed(() => {
     const avg =
       Array.from(rowHeights.value.values()).reduce(
         (acc, height) => acc + height,
         0
       ) / rowHeights.value.size
-    // console.log(Array.from(rowHeights.value.values()))
-    return avg || 40
+    return avg || itemHeight
   })
 
-  let observer = null
-  let resizeObserver = null
+  let observer: MutationObserver | null = null
+  let resizeObserver: ResizeObserver | null = null
 
   const updateRowHeights = () => {
-    let sum = 0
     rowRefs.value.forEach((row, id) => {
       if (row) {
         const height = row.getBoundingClientRect().height
         if (height > 0) {
           rowHeights.value.set(id, height)
         }
-        sum += height
       }
     })
-    totalHeight.value = sum
   }
 
-  const getVisibleRange = () => {
-    nextTick(() => {
-      // console.log('getVisibleRange')
-      let sum = 0
-      let start = 0
+  const getVisibleRange = async () => {
+    await nextTick()
 
-      for (let i = 0; i < itemsWithIndexes.value.length; i++) {
-        const id = itemsWithIndexes.value[i].virtualScrollIdx
-        sum += rowHeights.value.get(id) || rowAvgHeight.value
-        if (sum > scrollTop.value) {
-          start = Math.max(0, i - bufferSize) // Отматываем назад буфер
-          break
-        }
-      }
+    let sum = 0
+    let start = 0
 
-      let end = start + bufferSize // не накапливаем повторно высоты строк, попавших в буфер
-      while (
-        sum <
-          scrollTop.value +
-            (scrollParent.value?.clientHeight || window.innerHeight) &&
-        end < itemsWithIndexes.value.length
+    for (let i = 0; i < itemsWithIndexes.value.length; i++) {
+      const id = itemsWithIndexes.value[i].virtualScrollIdx
+      sum += rowHeights.value.get(id) || rowAvgHeight.value
+      if (
+        sum > Math.max(0, listRef.value?.getBoundingClientRect?.()?.top * -1)
       ) {
-        const id = itemsWithIndexes.value[end].virtualScrollIdx
-        sum += rowHeights.value.get(id) || rowAvgHeight.value
-        end++
+        start = Math.max(0, i - bufferSize) // Отматываем назад буфер
+        break
       }
-      // endIndex.value = Math.min(props.items.value.length - 1, end + bufferSize) // add buffer
-      endIndex.value = Math.min(itemsWithIndexes.value.length, end + bufferSize) // add buffer
-      startIndex.value = Math.max(0, start)
+    }
 
-      updateRowHeights()
-      updateRowHeights()
-    })
+    let end = start + bufferSize // не накапливаем повторно высоты строк, попавших в буфер
+    while (
+      sum <
+      scrollTop.value +
+      (scrollParent.value?.clientHeight ?? window.innerHeight) &&
+      end < itemsWithIndexes.value.length
+      ) {
+      const id = itemsWithIndexes.value[end].virtualScrollIdx
+      sum += rowHeights.value.get(id) || rowAvgHeight.value
+      end++
+    }
+    endIndex.value = Math.min(itemsWithIndexes.value.length, end + bufferSize) // add buffer
+    startIndex.value = Math.max(0, start)
+
+    updateRowHeights()
   }
 
   watch(
     () => props.items,
-    () => {
+    async () => {
       rowHeights.value.clear()
-      nextTick(() => {
-        updateRowHeights()
-        getVisibleRange()
-      })
+      await nextTick()
+      updateRowHeights()
+      await getVisibleRange()
     },
     { deep: true }
   )
 
   watch(
     scrollTop,
-    () => {
+    async () => {
       updateRowHeights()
-      getVisibleRange()
+      await getVisibleRange()
     },
     { immediate: true }
   )
@@ -117,7 +118,6 @@ export function useVirtualScroll(props, listRef, rowRefs, containerRef) {
     topPadding.value = topSum
 
     let bottomSum = 0
-    // debugger
     for (let i = endIndex.value; i < itemsWithIndexes.value.length - 1; i++) {
       bottomSum +=
         rowHeights.value.get(itemsWithIndexes.value[i].virtualScrollIdx) ||
@@ -127,22 +127,13 @@ export function useVirtualScroll(props, listRef, rowRefs, containerRef) {
   })
 
   const onScroll = () => {
-    // const container = containerRef.value
-    // scrollableEl.value = getScrollParent(container)
-    // console.log(
-    //   scrollParent.value?.scrollTop,
-    //   event.target.scrollTop,
-    //   document.scrollingElement?.scrollTop
-    // )
-    // scrollTop.value = top
     scrollTop.value =
-      (scrollParent.value !== window
-        ? scrollParent.value?.scrollTop
-        : document.scrollingElement?.scrollTop) || 0
-    // scrollTop.value = event.target.scrollTop
+      (scrollParent.value === window
+        ? document.scrollingElement?.scrollTop
+        : scrollParent.value?.scrollTop) || 0
   }
 
-  const scrollParent = ref(null)
+  const scrollParent = ref<HTMLElement>()
 
   function getScrollParent(node) {
     if ([undefined, null, document.documentElement].includes(node)) {
@@ -151,7 +142,7 @@ export function useVirtualScroll(props, listRef, rowRefs, containerRef) {
 
     if (
       window.getComputedStyle(node)?.overflow !== 'visible' &&
-      node.scrollHeight >= node.clientHeight
+      node.scrollHeight > node.clientHeight
     ) {
       return node
     } else {
@@ -161,28 +152,20 @@ export function useVirtualScroll(props, listRef, rowRefs, containerRef) {
 
   onMounted(() => {
     scrollParent.value = getScrollParent(containerRef.value?.parentNode)
-    // scrollParent.value = getScrollParent(list.value)
-    if (scrollParent.value !== window) {
-      scrollParent.value.addEventListener('scroll', onScroll)
-    } else {
-      window.addEventListener('scroll', onScroll)
-    }
+    scrollParent.value.addEventListener('scroll', onScroll)
     updateRowHeights()
   })
 
   onUnmounted(() => {
-    if (scrollParent.value !== window) {
-      scrollParent.value.removeEventListener('scroll', onScroll)
-    } else {
-      window.removeEventListener('scroll', onScroll)
-    }
+    scrollParent.value.removeEventListener('scroll', onScroll)
   })
 
   const observeRowChanges = () => {
     if (!listRef.value) return
 
-    observer = new MutationObserver(() => {
-      nextTick(() => updateRowHeights())
+    observer = new MutationObserver(async () => {
+      await nextTick()
+      updateRowHeights()
     })
 
     observer.observe(listRef.value, { childList: true, subtree: true })
@@ -191,23 +174,22 @@ export function useVirtualScroll(props, listRef, rowRefs, containerRef) {
   const observeResizeChanges = () => {
     if (!rowRefs.value) return
 
-    resizeObserver = new ResizeObserver(() => {
-      nextTick(() => updateRowHeights())
+    resizeObserver = new ResizeObserver(async () => {
+      await nextTick()
+      updateRowHeights()
     })
 
     rowRefs.value.forEach((row) => {
       if (row) {
-        resizeObserver.observe(row)
+        resizeObserver?.observe(row)
       }
     })
   }
 
-  onMounted(() => {
-    nextTick(() => {
-      // updateRowHeights()
-      observeRowChanges()
-      observeResizeChanges()
-    })
+  onMounted(async () => {
+    await nextTick()
+    observeRowChanges()
+    observeResizeChanges()
   })
 
   onUnmounted(() => {
@@ -219,8 +201,6 @@ export function useVirtualScroll(props, listRef, rowRefs, containerRef) {
     visibleItems,
     topPadding,
     bottomPadding,
-    onScroll,
-    updateRowHeights,
     rowHeights,
   }
 }
