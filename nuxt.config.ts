@@ -1,20 +1,12 @@
-// https://v3.nuxtjs.org/api/configuration/nuxt.config
+// https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
   ssr: false,
-  app: {
-    head: {
-      title: 'Extending Configs is Fun!',
-      meta: [
-        { name: 'description', content: 'I am using the extends feature in nuxt 3!' }
-      ],
-    }
-  },
   runtimeConfig: {
     public: {
-      apiBaseURL: process.env.API_BASE_URL,
-      // process.env.NODE_ENV === 'production'
-      //   ? process.env.API_BASE_URL
-      //   : '/api',
+      apiBaseURL:
+        process.env.NODE_ENV === 'production'
+          ? process.env.API_BASE_URL
+          : '/api',
       auth: {
         // specify api.me if enable prefetching
         prefetchUser: true,
@@ -23,6 +15,12 @@ export default defineNuxtConfig({
           logout: '/logout',
           refresh: '/refresh-access',
           me: '/me',
+        },
+        // Each redirect path can be disabled by setting to false
+        redirect: {
+          login: '/login', // User will be redirected to this path if login is required.
+          logout: '/login', // User will be redirected to this path after logout, if current route is protected.
+          home: '/', // User will be redirected to this path after login.
         },
       },
     },
@@ -34,11 +32,10 @@ export default defineNuxtConfig({
         '/api': {
           target: process.env.API_BASE_URL,
           changeOrigin: true,
+          rewrite: (path) => path.replace(/^\/api/, ''),
         },
       },
-    },
-    define: {
-      'process.env.DEBUG': false,
+      allowedHosts: true,
     },
     build: {
       target: 'esnext',
