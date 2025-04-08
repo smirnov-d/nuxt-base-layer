@@ -78,7 +78,7 @@ export function useVirtualScroll(
   }
 
   watch(
-    () => props.items,
+    () => props.items.value,
     async () => {
       rowHeights.value.clear()
       await getVisibleRange()
